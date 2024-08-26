@@ -1,0 +1,36 @@
+Bootstrap: docker
+From: ubuntu:22.04
+
+%post
+    # Use bash for shell operations
+    /bin/bash -c '
+    # Non-interactive frontend for debconf
+    export DEBIAN_FRONTEND=noninteractive
+    echo "tzdata tzdata/Areas select America" | debconf-set-selections
+    echo "tzdata tzdata/Zones/US select Central" | debconf-set-selections
+
+    # Update and install necessary tools
+    apt-get update && apt-get upgrade -yq
+    apt-get install -yq curl git build-essential tzdata
+
+    # Install Rust
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    . $HOME/.cargo/env
+
+    # Install Neovim
+    apt-get install -yq software-properties-common
+    add-apt-repository ppa:neovim-ppa/unstable -y
+    apt-get update
+    apt-get install -yq neovim
+
+    # Clean up
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+    '
+
+%environment
+    export PATH=$PATH:/root/.cargo/bin
+
+%runscript
+    echo "Welcome to the environment!"
+    /bin/bash
