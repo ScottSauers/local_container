@@ -17,6 +17,8 @@ From: ubuntu:22.04
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
     . $HOME/.cargo/env
 
+    rustup default stable
+
     # Install Neovim
     apt-get install -yq software-properties-common
     add-apt-repository ppa:neovim-ppa/unstable -y
