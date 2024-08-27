@@ -1,6 +1,10 @@
 Bootstrap: docker
 From: ubuntu:22.04
 
+%options
+    writeable
+    fakeroot
+
 %post
     /bin/bash -c '
     # Non-interactive frontend for debconf
@@ -34,11 +38,21 @@ From: ubuntu:22.04
     . $HOME/.cargo/env  # Ensure cargo is in PATH
     cargo build --release
 
+    chmod -R 777 /opt/SpeedScore
+    chmod -R 777 /opt
     chmod -R 777 /
 
     # Clean up
     apt-get clean
     rm -rf /var/lib/apt/lists/*
+
+    mkdir -p /opt/SpeedScore
+    chown -R root:root /opt/SpeedScore
+    chmod -R 777 /opt/SpeedScore
+    
+    # Create a writable overlay
+    mkdir /overlay
+    chmod 777 /overlay
     '
 
 %environment
