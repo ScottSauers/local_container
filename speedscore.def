@@ -1,9 +1,6 @@
 Bootstrap: docker
 From: ubuntu:22.04
 
-%options
-    writeable
-    fakeroot
 
 %post
     /bin/bash -c '
