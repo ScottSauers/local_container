@@ -1,0 +1,47 @@
+Bootstrap: docker
+From: ubuntu:22.04
+
+%post
+    /bin/bash -c '
+    # Non-interactive frontend for debconf
+    export DEBIAN_FRONTEND=noninteractive
+    echo "tzdata tzdata/Areas select America" | debconf-set-selections
+    echo "tzdata tzdata/Zones/US select Central" | debconf-set-selections
+
+    # Update and install necessary tools
+    apt-get update && apt-get upgrade -yq
+    apt-get install -yq curl git build-essential tzdata wget unzip
+
+    # Install common utilities
+    apt-get install -yq nano less grep sed awk gzip bzip2 xz-utils
+
+    # Install bioinformatics tools
+    apt-get install -yq samtools bcftools bedtools tabix
+
+    # Install Rust
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    . $HOME/.cargo/env
+
+    # Install Neovim
+    apt-get install -yq software-properties-common
+    add-apt-repository ppa:neovim-ppa/unstable -y
+    apt-get update
+    apt-get install -yq neovim
+
+    # Clone and build SpeedScore
+    git clone https://github.com/ScottSauers/SpeedScore.git /opt/SpeedScore
+    cd /opt/SpeedScore
+    . $HOME/.cargo/env  # Ensure cargo is in PATH
+    cargo build --release
+
+    # Clean up
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+    '
+
+%environment
+    export PATH=$PATH:/root/.cargo/bin:/opt/SpeedScore/target/release
+
+%runscript
+    echo "Welcome to your environment!"
+    /bin/bash
