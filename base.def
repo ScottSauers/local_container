@@ -4,12 +4,13 @@ From: ubuntu:22.04
 %post
     # Use bash
     /bin/bash -c '
+    set -e
     # Non-interactive frontend for debconf
     export DEBIAN_FRONTEND=noninteractive
     echo "tzdata tzdata/Areas select America" | debconf-set-selections
     echo "tzdata tzdata/Zones/US select Central" | debconf-set-selections
     
-    # Update and install tools
+    # Install tools
     apt-get update && apt-get upgrade -yq
     apt-get install -yq curl git build-essential tzdata software-properties-common \
         ripgrep fd-find python3-pip nodejs npm unzip wget
@@ -20,7 +21,7 @@ From: ubuntu:22.04
     apt-get install -yq neovim
 
     # Install Rust
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
     . $HOME/.cargo/env
     rustup default stable
 
@@ -39,7 +40,7 @@ From: ubuntu:22.04
     cargo install stylua
 
     # Install lazygit
-    LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+    LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po "\"tag_name\": \"v\K[^\"]*")
     curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
     tar xf lazygit.tar.gz lazygit
     install lazygit /usr/local/bin
