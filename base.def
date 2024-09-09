@@ -30,8 +30,8 @@ From: ubuntu:22.04
     # Install Node.js dependencies
     npm install -g neovim
 
-    # Install Lua
-    apt-get install -yq lua5.3 luarocks
+    # Install Lua and development headers
+    apt-get install -yq lua5.3 lua5.3-dev luarocks
     luarocks install luasocket
 
     # Install additional tools
