@@ -9,7 +9,7 @@ From: ubuntu:22.04
     echo "tzdata tzdata/Areas select America" | debconf-set-selections
     echo "tzdata tzdata/Zones/US select Central" | debconf-set-selections
     
-    # Install tools
+    # Update and install tools
     apt-get update && apt-get upgrade -yq
     apt-get install -yq curl git build-essential tzdata software-properties-common \
         ripgrep fd-find python3-pip nodejs npm unzip wget
@@ -35,7 +35,6 @@ From: ubuntu:22.04
     luarocks install luasocket
 
     # Install additional tools
-    # ripgrep and fd are already installed above
     curl -sS https://webi.sh/shfmt | sh
     cargo install stylua
 
@@ -58,6 +57,7 @@ From: ubuntu:22.04
     nvim --headless "+Lazy! sync" +qa
     nvim --headless "+MasonInstall lua-language-server rust-analyzer pyright typescript-language-server css-lsp bash-language-server clangd" +qa
 
+    # Install additional language servers and tools
     npm install -g prettier eslint
     pip3 install pylint flake8 black
 
@@ -78,5 +78,5 @@ From: ubuntu:22.04
     export TERM=xterm-256color
 
 %runscript
-    echo "Welcome to the environment!"
+    echo "Welcome to the environment with fully configured Neovim!"
     /bin/bash
