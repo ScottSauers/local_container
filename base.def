@@ -78,5 +78,5 @@ From: ubuntu:22.04
     export TERM=xterm-256color
 
 %runscript
-    echo "Welcome to the environment with fully configured Neovim!"
+    echo "Welcome to the environment!"
     /bin/bash
