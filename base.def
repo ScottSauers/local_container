@@ -2,77 +2,44 @@ Bootstrap: docker
 From: ubuntu:22.04
 
 %post
-    # Use bash
-    /bin/bash -c '
+    #!/bin/bash
     set -e
-    # Non-interactive frontend for debconf
     export DEBIAN_FRONTEND=noninteractive
     echo "tzdata tzdata/Areas select America" | debconf-set-selections
     echo "tzdata tzdata/Zones/US select Central" | debconf-set-selections
-    
-    # Install tools
     apt-get update && apt-get upgrade -yq
-    apt-get install -yq curl git build-essential tzdata software-properties-common \
-        ripgrep fd-find python3-pip nodejs npm unzip wget
-
-    # Install latest stable Neovim
+    apt-get install -yq curl git build-essential tzdata software-properties-common ripgrep fd-find python3-pip nodejs npm unzip wget
     add-apt-repository ppa:neovim-ppa/unstable -y
-    apt-get update
-    apt-get install -yq neovim
-
-    # Install Rust
+    apt-get update && apt-get install -yq neovim
     curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
     . $HOME/.cargo/env
     rustup default stable
-
-    # Install Python dependencies
     pip3 install pynvim
-
-    # Install Node.js dependencies
     npm install -g neovim
-
-    # Install Lua
     apt-get install -yq lua5.3 luarocks
     luarocks install luasocket
-
-    # Install additional tools
     curl -sS https://webi.sh/shfmt | sh
     cargo install stylua
-
-    # Install lazygit
-    LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po "\"tag_name\": \"v\K[^\"]*")
+    LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
     curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
     tar xf lazygit.tar.gz lazygit
     install lazygit /usr/local/bin
     rm lazygit lazygit.tar.gz
-
-    # Set up Neovim configuration
     mkdir -p /root/.config/nvim
     curl -fsSL https://raw.githubusercontent.com/ScottSauers/neovim_config/main/.config/nvim/init.lua -o /root/.config/nvim/init.lua
-
-    # Install lazy.nvim (plugin manager)
     git clone --filter=blob:none https://github.com/folke/lazy.nvim.git --branch=stable /root/.local/share/nvim/lazy/lazy.nvim
-
-    # Install Mason and LSP servers
     mkdir -p /root/.local/share/nvim/mason
     nvim --headless "+Lazy! sync" +qa
     nvim --headless "+MasonInstall lua-language-server rust-analyzer pyright typescript-language-server css-lsp bash-language-server clangd" +qa
-
-    # Install additional language servers and tools
     npm install -g prettier eslint
     pip3 install pylint flake8 black
-
-    # Install Nerd Fonts
     mkdir -p /usr/share/fonts/NerdFonts
     wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.0.2/DejaVuSansMono.zip
     unzip DejaVuSansMono.zip -d /usr/share/fonts/NerdFonts
     rm DejaVuSansMono.zip
     fc-cache -fv
-
-    # Clean up
     apt-get clean
     rm -rf /var/lib/apt/lists/*
-    '
 
 %environment
     export PATH=$PATH:/root/.cargo/bin:/root/.local/bin
