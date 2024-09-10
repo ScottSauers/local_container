@@ -75,26 +75,34 @@ From: ubuntu:22.04
     echo 'export NVIM_CONFIG_DIR=/opt/nvim/config' >> /etc/bash.bashrc
     echo 'alias nvim="XDG_CONFIG_HOME=/opt/nvim XDG_DATA_HOME=/opt/nvim/share nvim -u /opt/nvim/config/init.lua"' >> /etc/bash.bashrc
 
+    # Run initial setup for Neovim
+    XDG_CONFIG_HOME=/opt/nvim XDG_DATA_HOME=/opt/nvim/share nvim --headless "+Lazy! sync" +qa
+    XDG_CONFIG_HOME=/opt/nvim XDG_DATA_HOME=/opt/nvim/share nvim --headless "+MasonInstall lua-language-server rust-analyzer pyright typescript-language-server css-lsp bash-language-server clangd" +qa
+
+    # Ensure proper permissions
+    chmod -R 777 /opt/nvim
+
 %environment
     export PATH=$PATH:$HOME/.cargo/bin:$HOME/.local/bin
     export TERM=xterm-256color
     export XDG_CONFIG_HOME=/opt/nvim
     export XDG_DATA_HOME=/opt/nvim/share
     export NVIM_CONFIG_DIR=/opt/nvim/config
+    # Unset any Flatpak-related variables to prevent unexpected paths
+    unset FLATPAK_ID
+    unset FLATPAK_SANDBOX_DIR
 
 %runscript
     echo "Welcome to the environment!"
     /bin/bash
 
 %startscript
-    # Set up symlinks for user-specific data
-    mkdir -p $HOME/.local/share/nvim
-    ln -sfn /opt/nvim/share/nvim/mason $HOME/.local/share/nvim/mason
-    ln -sfn /opt/nvim/share/nvim/lazy $HOME/.local/share/nvim/lazy
+    # Ensure proper environment variables are set
+    export XDG_CONFIG_HOME=/opt/nvim
+    export XDG_DATA_HOME=/opt/nvim/share
+    export NVIM_CONFIG_DIR=/opt/nvim/config
 
-    # Run initial setup if needed
-    if [ ! -f $HOME/.nvim_setup_complete ]; then
-        XDG_CONFIG_HOME=/opt/nvim XDG_DATA_HOME=/opt/nvim/share nvim --headless "+Lazy! sync" +qa
-        XDG_CONFIG_HOME=/opt/nvim XDG_DATA_HOME=/opt/nvim/share nvim --headless "+MasonInstall lua-language-server rust-analyzer pyright typescript-language-server css-lsp bash-language-server clangd" +qa
-        touch $HOME/.nvim_setup_complete
-    fi
+    # Set up symlinks for user-specific data if they don't exist
+    mkdir -p $HOME/.local/share/nvim
+    [ ! -L "$HOME/.local/share/nvim/mason" ] && ln -sfn /opt/nvim/share/nvim/mason $HOME/.local/share/nvim/mason
+    [ ! -L "$HOME/.local/share/nvim/lazy" ] && ln -sfn /opt/nvim/share/nvim/lazy $HOME/.local/share/nvim/lazy
