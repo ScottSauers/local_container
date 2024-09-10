@@ -91,6 +91,7 @@ From: ubuntu:22.04
     # Unset any Flatpak-related variables to prevent unexpected paths
     unset FLATPAK_ID
     unset FLATPAK_SANDBOX_DIR
+    alias nvim="XDG_CONFIG_HOME=/opt XDG_DATA_HOME=/opt/share nvim -u /opt/nvim/config/init.lua"
 
 %runscript
     echo "Welcome to the environment!"
@@ -106,3 +107,6 @@ From: ubuntu:22.04
     mkdir -p $HOME/.local/share/nvim
     [ ! -L "$HOME/.local/share/nvim/mason" ] && ln -sfn /opt/nvim/share/nvim/mason $HOME/.local/share/nvim/mason
     [ ! -L "$HOME/.local/share/nvim/lazy" ] && ln -sfn /opt/nvim/share/nvim/lazy $HOME/.local/share/nvim/lazy
+
+    # Ensure the alias is set in the shell
+    alias nvim="XDG_CONFIG_HOME=/opt XDG_DATA_HOME=/opt/share nvim -u /opt/nvim/config/init.lua"
