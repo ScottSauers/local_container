@@ -70,14 +70,14 @@ From: ubuntu:22.04
     rm -rf /var/lib/apt/lists/*
     
     # Set up environment for all users
-    echo 'export XDG_CONFIG_HOME=/opt/nvim' >> /etc/bash.bashrc
-    echo 'export XDG_DATA_HOME=/opt/nvim/share' >> /etc/bash.bashrc
+    echo 'export XDG_CONFIG_HOME=/opt' >> /etc/bash.bashrc
+    echo 'export XDG_DATA_HOME=/opt/share' >> /etc/bash.bashrc
     echo 'export NVIM_CONFIG_DIR=/opt/nvim/config' >> /etc/bash.bashrc
-    echo 'alias nvim="XDG_CONFIG_HOME=/opt/nvim XDG_DATA_HOME=/opt/nvim/share nvim -u /opt/nvim/config/init.lua"' >> /etc/bash.bashrc
+    echo 'alias nvim="XDG_CONFIG_HOME=/opt XDG_DATA_HOME=/opt/share nvim -u /opt/nvim/config/init.lua"' >> /etc/bash.bashrc
 
     # Run initial setup for Neovim
-    XDG_CONFIG_HOME=/opt/nvim XDG_DATA_HOME=/opt/nvim/share nvim --headless "+Lazy! sync" +qa
-    XDG_CONFIG_HOME=/opt/nvim XDG_DATA_HOME=/opt/nvim/share nvim --headless "+MasonInstall lua-language-server rust-analyzer pyright typescript-language-server css-lsp bash-language-server clangd" +qa
+    XDG_CONFIG_HOME=/opt XDG_DATA_HOME=/opt/share nvim --headless -u /opt/nvim/config/init.lua "+Lazy! sync" +qa
+    XDG_CONFIG_HOME=/opt XDG_DATA_HOME=/opt/share nvim --headless -u /opt/nvim/config/init.lua "+MasonInstall lua-language-server rust-analyzer pyright typescript-language-server css-lsp bash-language-server clangd" +qa
 
     # Ensure proper permissions
     chmod -R 777 /opt/nvim
@@ -85,8 +85,8 @@ From: ubuntu:22.04
 %environment
     export PATH=$PATH:$HOME/.cargo/bin:$HOME/.local/bin
     export TERM=xterm-256color
-    export XDG_CONFIG_HOME=/opt/nvim
-    export XDG_DATA_HOME=/opt/nvim/share
+    export XDG_CONFIG_HOME=/opt
+    export XDG_DATA_HOME=/opt/share
     export NVIM_CONFIG_DIR=/opt/nvim/config
     # Unset any Flatpak-related variables to prevent unexpected paths
     unset FLATPAK_ID
@@ -98,8 +98,8 @@ From: ubuntu:22.04
 
 %startscript
     # Ensure proper environment variables are set
-    export XDG_CONFIG_HOME=/opt/nvim
-    export XDG_DATA_HOME=/opt/nvim/share
+    export XDG_CONFIG_HOME=/opt
+    export XDG_DATA_HOME=/opt/share
     export NVIM_CONFIG_DIR=/opt/nvim/config
 
     # Set up symlinks for user-specific data if they don't exist
