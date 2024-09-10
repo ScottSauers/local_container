@@ -12,53 +12,63 @@ From: ubuntu:22.04
     # Install tools
     apt-get update && apt-get upgrade -yq
     apt-get install -yq curl git build-essential tzdata software-properties-common ripgrep fd-find python3-pip nodejs npm unzip wget
+    
     # Install latest stable Neovim
     add-apt-repository ppa:neovim-ppa/unstable -y
     apt-get update
     apt-get install -yq neovim
+    
     # Install Rust
     curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
     . $HOME/.cargo/env
     rustup default stable
+    
     # Install Python dependencies
     pip3 install pynvim
+    
     # Install Node.js dependencies
     npm install -g neovim
+    
     # Install Lua and development headers
     apt-get install -yq lua5.3 lua5.3-dev luarocks
     luarocks install luasocket
+    
     # Install additional tools
     curl -sS https://webi.sh/shfmt | sh
     cargo install stylua
+    
     # Install lazygit
     LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
     curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
     tar xf lazygit.tar.gz lazygit
     install lazygit /usr/local/bin
     rm lazygit lazygit.tar.gz
+    
     # Set up Neovim configuration
     mkdir -p /opt/nvim/config
     mkdir -p /opt/nvim/share/nvim/site/pack/lazy/start
     mkdir -p /opt/nvim/share/nvim/mason
     mkdir -p /opt/nvim/share/nvim/lazy
     curl -fsSL https://raw.githubusercontent.com/ScottSauers/neovim_config/main/.config/nvim/init.lua -o /opt/nvim/config/init.lua
+    
     # Install lazy.nvim (plugin manager)
     git clone --filter=blob:none https://github.com/folke/lazy.nvim.git --branch=stable /opt/nvim/share/nvim/site/pack/lazy/start/lazy.nvim
-    # Set up Neovim
-    XDG_CONFIG_HOME=/opt/nvim XDG_DATA_HOME=/opt/nvim/share nvim --headless "+Lazy! sync" +qa
-    XDG_CONFIG_HOME=/opt/nvim XDG_DATA_HOME=/opt/nvim/share nvim --headless "+MasonInstall lua-language-server rust-analyzer pyright typescript-language-server css-lsp bash-language-server clangd" +qa
+    
     # Install additional language servers and tools
     npm install -g prettier eslint
     pip3 install pylint flake8 black
+    
     # Install Nerd Fonts
     mkdir -p /usr/share/fonts/NerdFonts
     wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.0.2/DejaVuSansMono.zip
     unzip DejaVuSansMono.zip -d /usr/share/fonts/NerdFonts
     rm DejaVuSansMono.zip
     fc-cache -fv
+    
     # Clean up
     apt-get clean
     rm -rf /var/lib/apt/lists/*
+    
     # Set up environment for all users
     echo 'export XDG_CONFIG_HOME=/opt/nvim' >> /etc/bash.bashrc
     echo 'export XDG_DATA_HOME=/opt/nvim/share' >> /etc/bash.bashrc
@@ -76,17 +86,15 @@ From: ubuntu:22.04
     echo "Welcome to the environment!"
     /bin/bash
 
-%setup
-    mkdir -p ${SINGULARITY_ROOTFS}/nvim_writable
-    chmod 777 ${SINGULARITY_ROOTFS}/nvim_writable
-
 %startscript
-    if [ ! -d "$HOME/.local/share/nvim" ]; then
-        mkdir -p $HOME/.local/share/nvim
-    fi
-    if [ ! -L "$HOME/.local/share/nvim/lazy" ]; then
-        ln -s /nvim_writable/lazy $HOME/.local/share/nvim/lazy
-    fi
-    if [ ! -L "$HOME/.local/share/nvim/mason" ]; then
-        ln -s /nvim_writable/mason $HOME/.local/share/nvim/mason
+    # Set up symlinks for user-specific data
+    mkdir -p $HOME/.local/share/nvim
+    ln -sfn /opt/nvim/share/nvim/mason $HOME/.local/share/nvim/mason
+    ln -sfn /opt/nvim/share/nvim/lazy $HOME/.local/share/nvim/lazy
+
+    # Run initial setup if needed
+    if [ ! -f $HOME/.nvim_setup_complete ]; then
+        XDG_CONFIG_HOME=/opt/nvim XDG_DATA_HOME=/opt/nvim/share nvim --headless "+Lazy! sync" +qa
+        XDG_CONFIG_HOME=/opt/nvim XDG_DATA_HOME=/opt/nvim/share nvim --headless "+MasonInstall lua-language-server rust-analyzer pyright typescript-language-server css-lsp bash-language-server clangd" +qa
+        touch $HOME/.nvim_setup_complete
     fi
