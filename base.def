@@ -45,16 +45,19 @@ From: ubuntu:22.04
     rm lazygit lazygit.tar.gz
 
     # Set up Neovim configuration
-    mkdir -p /root/.config/nvim
-    curl -fsSL https://raw.githubusercontent.com/ScottSauers/neovim_config/main/.config/nvim/init.lua -o /root/.config/nvim/init.lua
+    mkdir -p /etc/skel/.config/nvim
+    curl -fsSL https://raw.githubusercontent.com/ScottSauers/neovim_config/main/.config/nvim/init.lua -o /etc/skel/.config/nvim/init.lua
 
     # Install lazy.nvim (plugin manager)
-    git clone --filter=blob:none https://github.com/folke/lazy.nvim.git --branch=stable /root/.local/share/nvim/lazy/lazy.nvim
+    mkdir -p /etc/skel/.local/share/nvim
+    git clone --filter=blob:none https://github.com/folke/lazy.nvim.git --branch=stable /etc/skel/.local/share/nvim/lazy/lazy.nvim
 
-    # Install Mason and LSP servers
-    mkdir -p /root/.local/share/nvim/mason
-    nvim --headless "+Lazy! sync" +qa
-    nvim --headless "+MasonInstall lua-language-server rust-analyzer pyright typescript-language-server css-lsp bash-language-server clangd" +qa
+    # Prepare Mason directory
+    mkdir -p /etc/skel/.local/share/nvim/mason
+
+    # Set up Neovim for the skeleton user
+    HOME=/etc/skel nvim --headless "+Lazy! sync" +qa
+    HOME=/etc/skel nvim --headless "+MasonInstall lua-language-server rust-analyzer pyright typescript-language-server css-lsp bash-language-server clangd" +qa
 
     # Install additional language servers and tools
     npm install -g prettier eslint
@@ -72,7 +75,7 @@ From: ubuntu:22.04
     rm -rf /var/lib/apt/lists/*
 
 %environment
-    export PATH=$PATH:/root/.cargo/bin:/root/.local/bin
+    export PATH=$PATH:$HOME/.cargo/bin:$HOME/.local/bin
     export TERM=xterm-256color
 
 %runscript
