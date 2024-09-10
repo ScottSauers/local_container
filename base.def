@@ -3,7 +3,6 @@ From: ubuntu:22.04
 
 %post
     # Use bash
-    /bin/bash -c '
     set -e
     # Non-interactive frontend for debconf
     export DEBIAN_FRONTEND=noninteractive
@@ -71,7 +70,6 @@ From: ubuntu:22.04
     # Clean up
     apt-get clean
     rm -rf /var/lib/apt/lists/*
-    '
 
 %environment
     export PATH=$PATH:/root/.cargo/bin:/root/.local/bin
