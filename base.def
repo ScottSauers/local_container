@@ -40,10 +40,10 @@ From: ubuntu:22.04
     mkdir -p /opt/nvim/config
     curl -fsSL https://raw.githubusercontent.com/ScottSauers/neovim_config/main/.config/nvim/init.lua -o /opt/nvim/config/init.lua
     # Install lazy.nvim (plugin manager)
-    mkdir -p /opt/nvim/share
-    git clone --filter=blob:none https://github.com/folke/lazy.nvim.git --branch=stable /opt/nvim/share/lazy/lazy.nvim
+    mkdir -p /opt/nvim/share/nvim/site/pack/lazy/start
+    git clone --filter=blob:none https://github.com/folke/lazy.nvim.git --branch=stable /opt/nvim/share/nvim/site/pack/lazy/start/lazy.nvim
     # Prepare Mason directory
-    mkdir -p /opt/nvim/share/mason
+    mkdir -p /opt/nvim/share/nvim/mason
     # Set up Neovim
     XDG_CONFIG_HOME=/opt/nvim XDG_DATA_HOME=/opt/nvim/share nvim --headless "+Lazy! sync" +qa
     XDG_CONFIG_HOME=/opt/nvim XDG_DATA_HOME=/opt/nvim/share nvim --headless "+MasonInstall lua-language-server rust-analyzer pyright typescript-language-server css-lsp bash-language-server clangd" +qa
@@ -63,7 +63,7 @@ From: ubuntu:22.04
     echo 'export XDG_CONFIG_HOME=/opt/nvim' >> /etc/bash.bashrc
     echo 'export XDG_DATA_HOME=/opt/nvim/share' >> /etc/bash.bashrc
     echo 'export NVIM_CONFIG_DIR=/opt/nvim/config' >> /etc/bash.bashrc
-    echo 'alias nvim="nvim -u $NVIM_CONFIG_DIR/init.lua"' >> /etc/bash.bashrc
+    echo 'alias nvim="XDG_CONFIG_HOME=/opt/nvim XDG_DATA_HOME=/opt/nvim/share nvim -u /opt/nvim/config/init.lua"' >> /etc/bash.bashrc
 
 %environment
     export PATH=$PATH:$HOME/.cargo/bin:$HOME/.local/bin
