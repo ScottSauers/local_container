@@ -1,6 +1,8 @@
 Bootstrap: docker
 From: ubuntu:22.04
 
+# TODO: add cli / shell tools, like bgzip
+
 %post
     # Use bash
     set -e
