@@ -1,8 +1,6 @@
 Bootstrap: docker
 From: ubuntu:22.04
 
-# TODO: add common Python packages
-
 %post
     # Use bash
     set -e
@@ -24,9 +22,9 @@ From: ubuntu:22.04
     curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
     . $HOME/.cargo/env
     rustup default stable
-    
+
     # Install Python dependencies
-    pip3 install pynvim
+    pip3 install pynvim pandas numpy scipy matplotlib seaborn scikit-learn biopython statsmodels jupyter notebook
     
     # Install Node.js dependencies
     npm install -g neovim
