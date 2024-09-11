@@ -1,6 +1,8 @@
 Bootstrap: docker
 From: ubuntu:22.04
 
+# TODO: add common Python packages
+
 %post
     # Use bash
     set -e
