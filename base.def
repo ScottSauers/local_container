@@ -4,15 +4,14 @@ From: ubuntu:22.04
 %setup
     mkdir -p ${APPTAINER_ROOTFS}/cache
 
-%files
-    /cache /cache
-
 %post
     # Use bash and set error handling
     set -e
     export DEBIAN_FRONTEND=noninteractive
     echo "tzdata tzdata/Areas select America" | debconf-set-selections
     echo "tzdata tzdata/Zones/US select Central" | debconf-set-selections
+
+    mkdir -p /cache
 
     # Install basic tools and dependencies
     apt-get update && apt-get upgrade -yq
