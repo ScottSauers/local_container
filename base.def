@@ -1,39 +1,49 @@
 Bootstrap: docker
 From: ubuntu:22.04
 
+%setup
+    mkdir -p ${APPTAINER_ROOTFS}/cache
+
+%files
+    /cache /cache
+
 %post
     # Use bash and set error handling
     set -e
     export DEBIAN_FRONTEND=noninteractive
     echo "tzdata tzdata/Areas select America" | debconf-set-selections
     echo "tzdata tzdata/Zones/US select Central" | debconf-set-selections
-    
+
     # Install basic tools and dependencies
     apt-get update && apt-get upgrade -yq
     apt-get install -yq curl git build-essential tzdata software-properties-common ripgrep fd-find python3-pip nodejs npm unzip wget zlib1g-dev libbz2-dev liblzma-dev libcurl4-openssl-dev libssl-dev libncurses5-dev libopenblas-dev
 
     # Install bioinformatics tools
     apt-get install -yq samtools bedtools bcftools tabix
-    
+
     # Install HTSLIB (includes bgzip)
-    wget https://github.com/samtools/htslib/releases/download/1.17/htslib-1.17.tar.bz2
-    tar -xjf htslib-1.17.tar.bz2
+    if [ ! -f /cache/htslib-1.17.tar.bz2 ]; then
+        wget https://github.com/samtools/htslib/releases/download/1.17/htslib-1.17.tar.bz2 -O /cache/htslib-1.17.tar.bz2
+    fi
+    tar -xjf /cache/htslib-1.17.tar.bz2
     cd htslib-1.17
     ./configure
     make
     make install
     cd ..
-    rm -rf htslib-1.17 htslib-1.17.tar.bz2
+    rm -rf htslib-1.17
 
     # Install latest stable Neovim
     add-apt-repository ppa:neovim-ppa/unstable -y
     apt-get update
     apt-get install -yq neovim
-    
+
     # Install Rust
-    curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-    . $HOME/.cargo/env
-    rustup default stable
+    if [ ! -d /root/.cargo ]; then
+        curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+        . $HOME/.cargo/env
+        rustup default stable
+    fi
 
     # Install Python and dependencies
     apt-get install -yq python3-dev
@@ -52,33 +62,31 @@ From: ubuntu:22.04
     luarocks install luasocket
 
     # Install additional tools
-    curl -sS https://webi.sh/shfmt | sh
+    if [ ! -f /usr/local/bin/shfmt ]; then
+        curl -sS https://webi.sh/shfmt | sh
+    fi
     cargo install stylua ripgrep fd-find
 
     # Install lazygit
-    LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
-    curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
-    tar xf lazygit.tar.gz lazygit
-    install lazygit /usr/local/bin
-    rm lazygit lazygit.tar.gz
+    if [ ! -f /usr/local/bin/lazygit ]; then
+        LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+        curl -Lo /cache/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+        tar xf /cache/lazygit.tar.gz lazygit
+        install lazygit /usr/local/bin
+        rm lazygit
+    fi
 
     # Install parallel processing tools
     apt-get install -yq parallel
 
     # Install image viewing tools
-    apt-get install -yq imagemagick feh
+    apt-get install -yq imagemagick
 
     # Install additional bioinformatics tools
-    apt-get install -yq emboss blast2 clustalw muscle mafft fastqc trimmomatic bowtie2 bwa
-    
+    apt-get install -yq emboss mafft fastqc trimmomatic bowtie2 bwa
+
     # Install VCFtools
     apt-get install -yq vcftools
-    
-    # Install BWA
-    git clone https://github.com/lh3/bwa.git
-    cd bwa; make
-    cp bwa /usr/local/bin/
-    cd ..; rm -rf bwa
 
     # Set up Neovim configuration
     mkdir -p /opt/nvim/config
@@ -86,21 +94,24 @@ From: ubuntu:22.04
     mkdir -p /opt/nvim/share/nvim/mason
     mkdir -p /opt/nvim/share/nvim/lazy
     curl -fsSL https://raw.githubusercontent.com/ScottSauers/neovim_config/main/.config/nvim/init.lua -o /opt/nvim/config/init.lua
-    
+
     # Install lazy.nvim (plugin manager)
-    git clone --filter=blob:none https://github.com/folke/lazy.nvim.git --branch=stable /opt/nvim/share/nvim/site/pack/lazy/start/lazy.nvim
-    
+    if [ ! -d /opt/nvim/share/nvim/site/pack/lazy/start/lazy.nvim ]; then
+        git clone --filter=blob:none https://github.com/folke/lazy.nvim.git --branch=stable /opt/nvim/share/nvim/site/pack/lazy/start/lazy.nvim
+    fi
+
     # Install Nerd Fonts
-    mkdir -p /usr/share/fonts/NerdFonts
-    wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.0.2/DejaVuSansMono.zip
-    unzip DejaVuSansMono.zip -d /usr/share/fonts/NerdFonts
-    rm DejaVuSansMono.zip
-    fc-cache -fv
-    
+    if [ ! -d /usr/share/fonts/NerdFonts ]; then
+        mkdir -p /usr/share/fonts/NerdFonts
+        wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.0.2/DejaVuSansMono.zip -O /cache/DejaVuSansMono.zip
+        unzip /cache/DejaVuSansMono.zip -d /usr/share/fonts/NerdFonts
+        fc-cache -fv
+    fi
+
     # Clean up
     apt-get clean
     rm -rf /var/lib/apt/lists/*
-    
+
     # Set up environment for all users
     echo 'export XDG_CONFIG_HOME=/opt' >> /etc/bash.bashrc
     echo 'export XDG_DATA_HOME=/opt/share' >> /etc/bash.bashrc
@@ -111,7 +122,7 @@ From: ubuntu:22.04
     XDG_CONFIG_HOME=/opt XDG_DATA_HOME=/opt/share nvim --headless -u /opt/nvim/config/init.lua "+Lazy! sync" +qa
     XDG_CONFIG_HOME=/opt XDG_DATA_HOME=/opt/share nvim --headless -u /opt/nvim/config/init.lua "+MasonInstall lua-language-server rust-analyzer pyright typescript-language-server css-lsp bash-language-server clangd" +qa
 
-    # Ensure proper permissions
+    # Proper permissions
     chmod -R 777 /opt/nvim
 
 %environment
@@ -126,11 +137,11 @@ From: ubuntu:22.04
     alias nvim="XDG_CONFIG_HOME=/opt XDG_DATA_HOME=/opt/share nvim -u /opt/nvim/config/init.lua"
 
 %runscript
-    echo "Welcome to the bioinformatics environment!"
+    echo "Welcome to the environment!"
     /bin/bash
 
 %startscript
-    # Ensure proper environment variables are set
+    # Proper environment variables set
     export XDG_CONFIG_HOME=/opt
     export XDG_DATA_HOME=/opt/share
     export NVIM_CONFIG_DIR=/opt/nvim/config
@@ -140,5 +151,5 @@ From: ubuntu:22.04
     [ ! -L "$HOME/.local/share/nvim/mason" ] && ln -sfn /opt/nvim/share/nvim/mason $HOME/.local/share/nvim/mason
     [ ! -L "$HOME/.local/share/nvim/lazy" ] && ln -sfn /opt/nvim/share/nvim/lazy $HOME/.local/share/nvim/lazy
 
-    # Ensure the alias is set in the shell
+    # Alias is set in shell
     alias nvim="XDG_CONFIG_HOME=/opt XDG_DATA_HOME=/opt/share nvim -u /opt/nvim/config/init.lua"
