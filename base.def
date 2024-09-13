@@ -22,10 +22,10 @@ From: ubuntu:22.04
     chmod 644 /etc/sudo.conf
     echo "ALL ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
-    # Proper ownership of sudo-related files
     chown -R root:root /etc/sudoers /etc/sudoers.d
     chmod 440 /etc/sudoers
     chmod 750 /etc/sudoers.d
+    echo "Defaults !requiretty" >> /etc/sudoers
 
     apt-get install -yq curl git build-essential tzdata software-properties-common ripgrep fd-find python3-pip nodejs npm unzip wget zlib1g-dev libbz2-dev liblzma-dev libcurl4-openssl-dev libssl-dev libncurses5-dev libopenblas-dev
 
