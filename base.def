@@ -15,8 +15,18 @@ From: ubuntu:22.04
 
     # Install basic tools and dependencies
     apt-get update && apt-get upgrade -yq
-    apt-get install -yq sudo
+
+    # Install sudo and set correct permissions
+    apt-get update && apt-get install -y sudo
+    chown root:root /etc/sudo.conf
+    chmod 644 /etc/sudo.conf
     echo "ALL ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
+    # Proper ownership of sudo-related files
+    chown -R root:root /etc/sudoers /etc/sudoers.d
+    chmod 440 /etc/sudoers
+    chmod 750 /etc/sudoers.d
+
     apt-get install -yq curl git build-essential tzdata software-properties-common ripgrep fd-find python3-pip nodejs npm unzip wget zlib1g-dev libbz2-dev liblzma-dev libcurl4-openssl-dev libssl-dev libncurses5-dev libopenblas-dev
 
     # Install bioinformatics tools
