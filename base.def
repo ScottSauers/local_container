@@ -93,6 +93,23 @@ From: ubuntu:22.04
     # Install image viewing tools
     apt-get install -yq imagemagick
 
+    apt-get update && apt-get install -y \
+        build-essential \
+        cmake \
+        pkg-config \
+        libssl-dev \
+        zlib1g-dev \
+        libbz2-dev \
+        liblzma-dev \
+        libcurl4-openssl-dev \
+        libncurses5-dev \
+        libexpat1-dev \
+        autoconf \
+        automake \
+        libtool \
+        python3-dev \
+        python3-pip
+
     # Install additional bioinformatics tools
     apt-get install -yq emboss mafft fastqc trimmomatic bowtie2 bwa
 
