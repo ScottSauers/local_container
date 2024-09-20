@@ -155,6 +155,7 @@ From: ubuntu:22.04
 
 %environment
     export PATH=$PATH:$HOME/.cargo/bin:$HOME/.local/bin:/usr/local/bin
+    . $HOME/.cargo/env
     export TERM=xterm-256color
     export XDG_CONFIG_HOME=/opt
     export XDG_DATA_HOME=/opt/share
